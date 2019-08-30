@@ -9,7 +9,7 @@ from PyQt5.Qt import QMainWindow, QWidget, QPixmap, QSize, QTransform
 from PyQt5.QtGui import QPainter, QBrush, QPen, QColor, QIcon, QImage
 
 from models import MediaPlayer, Frame, Label
-#from Thread import Thread
+from Thread import Thread
 
 
 class AppWindow( QMainWindow):
@@ -23,9 +23,7 @@ class AppWindow( QMainWindow):
         self.setWindowTitle("Image Annotation Tool v0.1")
         self.setFixedSize(self.size())
         self.myPixmap = QtGui.QPixmap()
-        #=======================================================================
-        # self.th = Thread(self)
-        #=======================================================================
+        self.th = Thread(self)
         #boolean for image
         self.IMAGE_LOADED = False
         self.scene = QtWidgets.QGraphicsScene(0, 0, 500, 555)
@@ -44,9 +42,8 @@ class AppWindow( QMainWindow):
         self.loadImgBtn.clicked.connect(self.set_frame)
         self.saveBtn.clicked.connect(self.saveTxt)
         self.undoBtn.clicked.connect(self.undo)
-        #=======================================================================
-        # self.playPauseBtn.clicked.connect(self.playPause)
-        #=======================================================================
+        self.playPauseBtn.clicked.connect(self.playPause)
+        self.loadVideoBtn.clicked.connect(self.loadVideo)
         
         self.frame = Frame(0 , 0, "/")
         #first coordinates
@@ -76,24 +73,20 @@ class AppWindow( QMainWindow):
     def itemSelected(self):
         print("item selected: ", self.listWidget.currentItem().text())
     
-    #===========================================================================
-    # def playPause(self):
-    #     self.th.playPause();
-    #     self.th.start()
-    #===========================================================================
+    def playPause(self):
+        self.th.playPause();
+        self.th.start()
     
     def openDialog(self):
         labelSet = Dialog()
         result = labelSet.exec_()
         print(result)
     
-    #===========================================================================
-    # @pyqtSlot(QImage)
-    # def setImage(self, image):
-    #     self.pixmap_item.setPixmap(QPixmap.fromImage(image))
-    #     self.scene.setSceneRect(self.pixmap_item.boundingRect())
-    #     self.scale = width / pixmap_item.rect().width()
-    #===========================================================================
+    @pyqtSlot(QImage)
+    def setImage(self, image):
+        self.pixmap_item.setPixmap(QPixmap.fromImage(image))
+        self.scene.setSceneRect(self.pixmap_item.boundingRect())
+        self.scale = self.th.getScale()
         
     
     def undo(self):
@@ -102,12 +95,12 @@ class AppWindow( QMainWindow):
         self.scene.removeItem(self.labelList[-1])
         self.labelList.pop()
         self.listWidget.takeItem(self.listWidget.count()-1)
-        #=======================================================================
-        # self.th.changePixmap.connect(self.setImage)
-        # self.th.setViewSize(self.graphicsView.size())
-        # self.th.start()
-        # self.IMAGE_LOADED = True
-        #=======================================================================
+    
+    def loadVideo(self):
+        self.th.changePixmap.connect(self.setImage)
+        self.th.setViewSize(self.graphicsView.size())
+        self.th.start()
+        self.IMAGE_LOADED = True
         
         
     def set_frame(self):
